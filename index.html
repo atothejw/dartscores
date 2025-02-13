@@ -75,53 +75,54 @@
             <canvas id="winningChart"></canvas>
         </div>
     </div>
+    
+    <!-- Firebase SDK -->
     <script type="module" src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
     <script type="module" src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js"></script>
     <script type="module" src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <script type="module">
-    // Import the functions you need from the SDKs you need
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.3.1/firebase-app.js";
-    import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.3.1/firebase-analytics.js";
-    import { getFirestore } from "https://www.gstatic.com/firebasejs/11.3.1/firebase-firestore.js";
+        // Import the functions you need from the SDKs you need
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.3.1/firebase-app.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.3.1/firebase-analytics.js";
+        import { getFirestore } from "https://www.gstatic.com/firebasejs/11.3.1/firebase-firestore.js";
 
-    // Your web app's Firebase configuration
-    const firebaseConfig = {
-        apiKey: "AIzaSyBMk8r6QCvFTBBmKTU1g0HSoaV3WctqRs4",
-        authDomain: "dartscores-fc070.firebaseapp.com",
-        projectId: "dartscores-fc070",
-        storageBucket: "dartscores-fc070.firebasestorage.app",
-        messagingSenderId: "288908668846",
-        appId: "1:288908668846:web:30fa29f2554c720e15a23f",
-        measurementId: "G-1SYQ08H23M"
-    };
+        // Your web app's Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyBMk8r6QCvFTBBmKTU1g0HSoaV3WctqRs4",
+            authDomain: "dartscores-fc070.firebaseapp.com",
+            projectId: "dartscores-fc070",
+            storageBucket: "dartscores-fc070.firebasestorage.app",
+            messagingSenderId: "288908668846",
+            appId: "1:288908668846:web:30fa29f2554c720e15a23f",
+            measurementId: "G-1SYQ08H23M"
+        };
 
-    // Initialize Firebase
-    const app = initializeApp(firebaseConfig);
-    const analytics = getAnalytics(app);
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const analytics = getAnalytics(app);
 
-    // Initialize Firestore
-    const db = getFirestore(app);  // Dit is de juiste manier om db te initialiseren
-</script>
-    
-<script type="module">
+        // Initialize Firestore
+        const db = getFirestore(app); // Correct Firestore initialization
+
         const scoresTableBody = document.querySelector('#scoresTable tbody');
         const winningChartCtx = document.getElementById('winningChart').getContext('2d');
         let winningChart;
 
         // Fetch and load scores from Firestore on page load
         function loadScores() {
-    db.collection('Dartscores').get()
-        .then(querySnapshot => {
-            const scores = [];
-            querySnapshot.forEach(doc => {
-                scores.push(doc.data());
-            });
-            updateScoresTable(scores);
-            updateWinningChart(scores);
-        })
-        .catch(error => console.error('Error fetching scores: ', error));
-}
+            db.collection('Dartscores').get()
+                .then(querySnapshot => {
+                    const scores = [];
+                    querySnapshot.forEach(doc => {
+                        scores.push(doc.data());
+                    });
+                    updateScoresTable(scores);
+                    updateWinningChart(scores);
+                })
+                .catch(error => console.error('Error fetching scores: ', error));
+        }
+
         // Update Scores Table
         function updateScoresTable(scores) {
             scoresTableBody.innerHTML = '';
@@ -214,7 +215,5 @@
         // Load scores on page load
         window.onload = loadScores;
     </script>
-
-     
 </body>
 </html>
