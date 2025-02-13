@@ -78,7 +78,7 @@
     <script type="module" src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
     <script type="module" src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js"></script>
     <script type="module" src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script>
+    <script type="module">
         // Import the functions you need from the SDKs you need
   import { initializeApp } from "https://www.gstatic.com/firebasejs/11.3.1/firebase-app.js";
   import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.3.1/firebase-analytics.js";
@@ -100,8 +100,8 @@
   // Initialize Firebase
   const app = initializeApp(firebaseConfig);
   const analytics = getAnalytics(app);
-
-
+    </script>
+<script>
         const scoresTableBody = document.querySelector('#scoresTable tbody');
         const winningChartCtx = document.getElementById('winningChart').getContext('2d');
         let winningChart;
