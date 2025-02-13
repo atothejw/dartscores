@@ -84,7 +84,11 @@
     // Import Firebase modules
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
     import { getFirestore, collection, getDocs, addDoc } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
-    import Chart from "https://cdn.jsdelivr.net/npm/chart.js@3.8.0/dist/chart.min.js";  
+
+   
+    import * as ChartJS from "https://cdn.jsdelivr.net/npm/chart.js@3.8.0/dist/chart.min.js"; 
+    
+    const { Chart } = ChartJS; 
 
     // Firebase configuration
     const firebaseConfig = {
