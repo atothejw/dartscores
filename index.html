@@ -80,139 +80,140 @@
     <script type="module" src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js"></script>
     <script type="module" src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-    <script type="module">
-        // Import Firebase modules
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
-        import { getFirestore, collection, getDocs, addDoc } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
-        import { Chart } from "https://cdn.jsdelivr.net/npm/chart.js";
+ <script type="module">
+    // Import Firebase modules
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
+    import { getFirestore, collection, getDocs, addDoc } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
+    import Chart from "https://cdn.jsdelivr.net/npm/chart.js@3.8.0/dist/chart.min.js";  <!-- Correcte import voor Chart.js -->
 
-        // Firebase configuration
-        const firebaseConfig = {
-            apiKey: "AIzaSyBMk8r6QCvFTBBmKTU1g0HSoaV3WctqRs4",
-            authDomain: "dartscores-fc070.firebaseapp.com",
-            projectId: "dartscores-fc070",
-            storageBucket: "dartscores-fc070.firebasestorage.app",
-            messagingSenderId: "288908668846",
-            appId: "1:288908668846:web:30fa29f2554c720e15a23f",
-            measurementId: "G-1SYQ08H23M"
-        };
+    // Firebase configuration
+    const firebaseConfig = {
+        apiKey: "AIzaSyBMk8r6QCvFTBBmKTU1g0HSoaV3WctqRs4",
+        authDomain: "dartscores-fc070.firebaseapp.com",
+        projectId: "dartscores-fc070",
+        storageBucket: "dartscores-fc070.firebasestorage.app",
+        messagingSenderId: "288908668846",
+        appId: "1:288908668846:web:30fa29f2554c720e15a23f",
+        measurementId: "G-1SYQ08H23M"
+    };
 
-        // Initialize Firebase
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
 
-        const scoresTableBody = document.querySelector('#scoresTable tbody');
-        const winningChartCtx = document.getElementById('winningChart').getContext('2d');
-        let winningChart;
+    const scoresTableBody = document.querySelector('#scoresTable tbody');
+    const winningChartCtx = document.getElementById('winningChart').getContext('2d');
+    let winningChart;
 
-        // Fetch and load scores from Firestore on page load
-        async function loadScores() {
-            try {
-                const querySnapshot = await getDocs(collection(db, "Dartscores"));
-                const scores = [];
-                querySnapshot.forEach(doc => {
-                    scores.push(doc.data());
-                });
-                updateScoresTable(scores);
-                updateWinningChart(scores);
-            } catch (error) {
-                console.error('Error fetching scores: ', error);
-            }
-        }
-
-        // Update Scores Table
-        function updateScoresTable(scores) {
-            scoresTableBody.innerHTML = '';
-            scores.forEach(score => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${score.playerName}</td>
-                    <td>${score.score}</td>
-                    <td>${score.date}</td>
-                `;
-                scoresTableBody.appendChild(row);
+    // Fetch and load scores from Firestore on page load
+    async function loadScores() {
+        try {
+            const querySnapshot = await getDocs(collection(db, "Dartscores"));
+            const scores = [];
+            querySnapshot.forEach(doc => {
+                scores.push(doc.data());
             });
+            updateScoresTable(scores);
+            updateWinningChart(scores);
+        } catch (error) {
+            console.error('Error fetching scores: ', error);
         }
+    }
 
-        // Update Winning Chart
-        function updateWinningChart(scores) {
-            const playerScores = {};
+    // Update Scores Table
+    function updateScoresTable(scores) {
+        scoresTableBody.innerHTML = '';
+        scores.forEach(score => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${score.playerName}</td>
+                <td>${score.score}</td>
+                <td>${score.date}</td>
+            `;
+            scoresTableBody.appendChild(row);
+        });
+    }
 
-            // Calculate total score per player
-            scores.forEach(score => {
-                if (!playerScores[score.playerName]) {
-                    playerScores[score.playerName] = 0;
-                }
-                playerScores[score.playerName] += score.score;
-            });
+    // Update Winning Chart
+    function updateWinningChart(scores) {
+        const playerScores = {};
 
-            const labels = Object.keys(playerScores);
-            const data = labels.map(label => playerScores[label]);
-
-            if (winningChart) {
-                winningChart.data.labels = labels;
-                winningChart.data.datasets[0].data = data;
-                winningChart.update();
-            } else {
-                winningChart = new Chart(winningChartCtx, {
-                    type: 'bar',
-                    data: {
-                        labels: labels,
-                        datasets: [{
-                            label: 'Total Scores',
-                            data: data,
-                            backgroundColor: [
-                                'rgba(255, 99, 132, 0.2)',
-                                'rgba(54, 162, 235, 0.2)',
-                                'rgba(255, 206, 86, 0.2)',
-                                'rgba(75, 192, 192, 0.2)',
-                                'rgba(153, 102, 255, 0.2)',
-                                'rgba(255, 159, 64, 0.2)'
-                            ],
-                            borderColor: [
-                                'rgba(255, 99, 132, 1)',
-                                'rgba(54, 162, 235, 1)',
-                                'rgba(255, 206, 86, 1)',
-                                'rgba(75, 192, 192, 1)',
-                                'rgba(153, 102, 255, 1)',
-                                'rgba(255, 159, 64, 1)'
-                            ],
-                            borderWidth: 1
-                        }]
-                    },
-                    options: {
-                        scales: {
-                            y: {
-                                beginAtZero: true
-                            }
-                        }
-                    }
-                });
+        // Calculate total score per player
+        scores.forEach(score => {
+            if (!playerScores[score.playerName]) {
+                playerScores[score.playerName] = 0;
             }
-        }
-
-        // Add score to Firestore
-        document.getElementById('scoreForm').addEventListener('submit', async function(event) {
-            event.preventDefault();
-            const playerName = document.getElementById('playerName').value.trim();
-            const score = parseInt(document.getElementById('score').value, 10);
-            const date = new Date().toISOString().split('T')[0];
-
-            if (playerName && score) {
-                const newScore = { playerName, score, date };
-
-                try {
-                    await addDoc(collection(db, 'Dartscores'), newScore);
-                    loadScores(); // Reload scores after adding
-                    document.getElementById('scoreForm').reset();
-                } catch (error) {
-                    console.error('Error adding score: ', error);
-                }
-            }
+            playerScores[score.playerName] += score.score;
         });
 
-        // Load scores on page load
-        window.onload = loadScores;
-    </script>
+        const labels = Object.keys(playerScores);
+        const data = labels.map(label => playerScores[label]);
+
+        if (winningChart) {
+            winningChart.data.labels = labels;
+            winningChart.data.datasets[0].data = data;
+            winningChart.update();
+        } else {
+            winningChart = new Chart(winningChartCtx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Total Scores',
+                        data: data,
+                        backgroundColor: [
+                            'rgba(255, 99, 132, 0.2)',
+                            'rgba(54, 162, 235, 0.2)',
+                            'rgba(255, 206, 86, 0.2)',
+                            'rgba(75, 192, 192, 0.2)',
+                            'rgba(153, 102, 255, 0.2)',
+                            'rgba(255, 159, 64, 0.2)'
+                        ],
+                        borderColor: [
+                            'rgba(255, 99, 132, 1)',
+                            'rgba(54, 162, 235, 1)',
+                            'rgba(255, 206, 86, 1)',
+                            'rgba(75, 192, 192, 1)',
+                            'rgba(153, 102, 255, 1)',
+                            'rgba(255, 159, 64, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+    }
+
+    // Add score to Firestore
+    document.getElementById('scoreForm').addEventListener('submit', async function(event) {
+        event.preventDefault();
+        const playerName = document.getElementById('playerName').value.trim();
+        const score = parseInt(document.getElementById('score').value, 10);
+        const date = new Date().toISOString().split('T')[0];
+
+        if (playerName && score) {
+            const newScore = { playerName, score, date };
+
+            try {
+                await addDoc(collection(db, 'Dartscores'), newScore);
+                loadScores(); // Reload scores after adding
+                document.getElementById('scoreForm').reset();
+            } catch (error) {
+                console.error('Error adding score: ', error);
+            }
+        }
+    });
+
+    // Load scores on page load
+    window.onload = loadScores;
+</script>
+
 </body>
 </html>
