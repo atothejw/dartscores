@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dart Score Tracker</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 20px;
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        #app {
+            width: 100%;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 20px;
+        }
+        label, input, select, button {
+            margin: 5px 0;
+            padding: 10px;
+            font-size: 16px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        #chartContainer {
+            width: 100%;
+            height: 400px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Dart Score Tracker</h1>
+    <div id="app">
+        <form id="scoreForm">
+            <label for="playerName">Player Name:</label>
+            <input type="text" id="playerName" required>
+            <label for="score">Score:</label>
+            <input type="number" id="score" required>
+            <button type="submit">Add Score</button>
+        </form>
+        <table id="scoresTable">
+            <thead>
+                <tr>
+                    <th>Player Name</th>
+                    <th>Score</th>
+                    <th>Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Scores will be added here -->
+            </tbody>
+        </table>
+        <div id="chartContainer">
+            <canvas id="winningChart"></canvas>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Firebase Config (Replace with your own config)
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_AUTH_DOMAIN",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_STORAGE_BUCKET",
+            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+            appId: "YOUR_APP_ID"
+        };
+
+        // Initialize Firebase
+        const app = firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore(app);
+
+        const scoresTableBody = document.querySelector('#scoresTable tbody');
+        const winningChartCtx = document.getElementById('winningChart').getContext('2d');
+        let winningChart;
+
+        // Fetch and load scores from Firestore on page load
+        function loadScores() {
+            db.collection('dartScores').get()
+                .then(querySnapshot => {
+                    const scores = [];
+                    querySnapshot.forEach(doc => {
+                        scores.push(doc.data());
+                    });
+                    updateScoresTable(scores);
+                    updateWinningChart(scores);
+                })
+                .catch(error => console.error('Error fetching scores: ', error));
+        }
+
+        // Update Scores Table
+        function updateScoresTable(scores) {
+            scoresTableBody.innerHTML = '';
+            scores.forEach(score => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${score.playerName}</td>
+                    <td>${score.score}</td>
+                    <td>${score.date}</td>
+                `;
+                scoresTableBody.appendChild(row);
+            });
+        }
+
+        // Update Chart
+        function updateWinningChart(scores) {
+            const playerScores = {};
+            scores.forEach(score => {
+                if (!playerScores[score.playerName]) {
+                    playerScores[score.playerName] = 0;
+                }
+                playerScores[score.playerName] += score.score;
+            });
+
+            const labels = Object.keys(playerScores);
+            const data = labels.map(label => playerScores[label]);
+
+            if (winningChart) {
+                winningChart.data.labels = labels;
+                winningChart.data.datasets[0].data = data;
+                winningChart.update();
+            } else {
+                winningChart = new Chart(winningChartCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Total Scores',
+                            data: data,
+                            backgroundColor: [
+                                'rgba(255, 99, 132, 0.2)',
+                                'rgba(54, 162, 235, 0.2)',
+                                'rgba(255, 206, 86, 0.2)',
+                                'rgba(75, 192, 192, 0.2)',
+                                'rgba(153, 102, 255, 0.2)',
+                                'rgba(255, 159, 64, 0.2)'
+                            ],
+                            borderColor: [
+                                'rgba(255, 99, 132, 1)',
+                                'rgba(54, 162, 235, 1)',
+                                'rgba(255, 206, 86, 1)',
+                                'rgba(75, 192, 192, 1)',
+                                'rgba(153, 102, 255, 1)',
+                                'rgba(255, 159, 64, 1)'
+                            ],
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+            }
+        }
+
+        // Add score to Firestore
+        document.getElementById('scoreForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const playerName = document.getElementById('playerName').value.trim();
+            const score = parseInt(document.getElementById('score').value, 10);
+            const date = new Date().toISOString().split('T')[0];
+
+            if (playerName && score) {
+                const newScore = { playerName, score, date };
+
+                // Save score to Firestore
+                db.collection('dartScores').add(newScore)
+                    .then(() => {
+                        loadScores(); // Reload scores after adding
+                        document.getElementById('scoreForm').reset();
+                    })
+                    .catch(error => console.error('Error adding score: ', error));
+            }
+        });
+
+        // Load scores on page load
+        window.onload = loadScores;
+    </script>
+</body>
+</html>
