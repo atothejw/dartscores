@@ -108,7 +108,7 @@
 
         // Fetch and load scores from Firestore on page load
         function loadScores() {
-            db.collection('dartScores').get()
+            db.collection('Dartscores').get()
                 .then(querySnapshot => {
                     const scores = [];
                     querySnapshot.forEach(doc => {
